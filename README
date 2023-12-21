@@ -1,0 +1,7 @@
+layer - just for test purposes
+
+Main layer maintainer: Steffen Volkmann <steffen<at>volkmann.com>
+
+it includes:
+- own distro with name "turbo"
+- own image called turbo-image-minimal

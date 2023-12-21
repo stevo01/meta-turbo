@@ -1,0 +1,89 @@
+#!/bin/bash
+
+function usage {
+    echo "sample first build:" 
+    echo "   source setup-environment build.pi raspberrypi"
+    echo ""
+    echo "sample CONSECUTIVE build" 
+    echo "   source setup-environment build.pi"
+    return 0
+} 
+
+function printtargets {
+    echo target=$target is not supported
+    echo "supported targets:"
+    echo "   qemux86-64"
+    echo "   qemuarm64"
+    echo "   raspberrypi4-64"
+    echo "   raspberrypi4-64"
+    echo ""
+    return 0
+} 
+
+function addlayers {
+    # add relevant layers
+    bitbake-layers add-layer $PWD/../sources/meta-openembedded/meta-oe/
+    bitbake-layers add-layer $PWD/../sources/meta-openembedded/meta-python/
+    bitbake-layers add-layer $PWD/../sources/meta-openembedded/meta-multimedia/
+    bitbake-layers add-layer $PWD/../sources/meta-openembedded/meta-networking/
+    bitbake-layers add-layer $PWD/../sources/meta-turbo/
+    bitbake-layers add-layer $PWD/../sources/meta-templates/
+    return 0
+} 
+
+# Inspired by "probe" in oe-init-build-env
+if [ -n "$BASH_SOURCE" ]; then
+    this_script=$BASH_SOURCE
+elif [ -n "$ZSH_NAME" ]; then
+    this_script=$0
+else
+    this_script="$(pwd)/setup-environment"
+fi
+
+script_dir=$(dirname "$this_script")
+script_dir=$(readlink -f "$script_dir")
+
+layers_dir=sources
+
+# check if argument is missing
+if [[ $# -eq 1 || $# -eq 2 ]]; then 
+    build_dir=${script_dir}/$1
+    echo "Builddir =" $build_dir  
+else
+    echo "error: number of arguments is not valid"
+    echo ""
+    usage
+fi
+
+# call the yocto oe-init-build-env script
+if [[ $# -eq 1 || $# -eq 2 ]]; then 
+    build_dir=${script_dir}/$1
+    echo "Builddir =" $build_dir
+
+    if [ -f ${script_dir}/${layers_dir}/poky/oe-init-build-env ]; then
+        source ${script_dir}/${layers_dir}/poky/oe-init-build-env ${build_dir}
+    else
+        echo "Sorry, can't find oe-init-build-env."
+        exit 1
+    fi
+fi
+
+if [[ $# -eq 2 ]]; then 
+    target=$2
+    # copy template of local.conf 
+    if [ $target == "qemuarm64" ]; then
+        cp ../sources/meta-turbo/templates/qemuarm64/local.conf conf/local.conf
+        addlayers
+    elif [ $target == "qemux86-64" ]; then
+        cp ../sources/meta-turbo/templates/qemux86-64/local.conf conf/local.conf
+        addlayers
+    elif [ $target == "raspberrypi4-64" ]; then
+        cp ../sources/meta-turboqemux86-64/templates/raspberrypi/local.conf conf/local.conf
+        bitbake-layers add-layer $PWD/../sources/meta-raspberrypi/
+        addlayers
+    else
+        printtargets
+    fi
+fi
+
+echo "script is ready"

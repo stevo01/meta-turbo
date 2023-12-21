@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  build-oe:
+    image: build-oe
+    
+    build:
+      context: ./sources/meta-turbo/build-oe/src
+      dockerfile: Dockerfile
+
+    environment:
+      - CURRENT_USER_PATH=$PWD
+      - CURRENT_UID=$UID
+      - CURRENT_USER=$USER
+
+    user: stevo
+
+    volumes:
+      - $PWD/:$PWD
+      - /home/$USER/.yoctoshare:/home/$USER/.yoctoshare
+      - /home/$USER/.ssh:/home/$USER/.ssh
+      
