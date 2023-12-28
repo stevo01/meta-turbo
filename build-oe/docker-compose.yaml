@@ -13,8 +13,6 @@ services:
       - CURRENT_UID=$UID
       - CURRENT_USER=$USER
 
-    user: stevo
-
     volumes:
       - $PWD/:$PWD
       - /home/$USER/.yoctoshare:/home/$USER/.yoctoshare
