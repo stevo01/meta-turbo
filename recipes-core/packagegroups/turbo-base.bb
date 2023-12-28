@@ -2,7 +2,7 @@ DESCRIPTION = "My Custom Package Group"
 
 inherit packagegroup
 
-RDEPENDS:${PN}-apps = "\
+RDEPENDS-${PN}-apps = "\
     dropbear \
     portmap \
     psplash"
