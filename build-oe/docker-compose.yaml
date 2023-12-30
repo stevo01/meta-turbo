@@ -12,9 +12,11 @@ services:
       - CURRENT_USER_PATH=$PWD
       - CURRENT_UID=$UID
       - CURRENT_USER=$USER
+      - CURRENT_PASSWORD=root
 
     volumes:
       - $PWD/:$PWD
       - /home/$USER/.yoctoshare:/home/$USER/.yoctoshare
       - /home/$USER/.ssh:/home/$USER/.ssh
+      - /dev/net/tun:/dev/net/tun
       

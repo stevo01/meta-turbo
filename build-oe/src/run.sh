@@ -9,7 +9,7 @@ function add_user() {
     echo Create user with
     echo "  user id = $CURRENT_UID"
     echo "  user name = $CURRENT_USER"
-    useradd -u $CURRENT_UID --shell /bin/bash $CURRENT_USER
+    useradd -u $CURRENT_UID -p $CURRENT_PASSWORD --shell /bin/bash $CURRENT_USER
 }
 
 
@@ -29,6 +29,8 @@ function run (){
     trap 'sighandler_TERM' 15
 
     add_user
+
+    modprobe tun
 
     echo "wait for terminate signal"
     while [  "$STOP_CONT" = "no"  ] ; do
