@@ -11,7 +11,10 @@ function add_user() {
     echo "  user name = $CURRENT_USER"
     echo "  user passwd = $CURRENT_PASSWORD"
     useradd -u $CURRENT_UID -p $CURRENT_PASSWORD --shell /bin/bash $CURRENT_USER
-    usermod -a -G sudo $CURRENT_USER
+
+    echo "${CURRENT_USER} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/${CURRENT_USER} && \
+    chmod 0440 /etc/sudoers.d/${CURRENT_USER}
+
 }
 
 

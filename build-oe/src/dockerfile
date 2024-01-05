@@ -1,18 +1,25 @@
-FROM ubuntu:16.04
+FROM ubuntu:22.04
 
 # maintainer: volkmann@devpool.net
-# url: http://gitea.devpool.net:3000/stevo/oe-buildenv
 
-RUN apt-get update \
-    && apt-get install -y gawk wget git-core diffstat unzip texinfo gcc-multilib    \
-     build-essential chrpath socat cpio python python3 python3-pip python3-pexpect  \
-     xz-utils debianutils iputils-ping libsdl1.2-dev xterm locales repo ncurses-dev \
-     screen intltool gengetopt coccinelle faketime bison flex sudo kmod \
-	&& localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt update 
+RUN apt install -y gawk wget git-core diffstat unzip texinfo \
+    gcc-multilib build-essential chrpath socat cpio python3 \
+    python3-pip python3-pexpect xz-utils debianutils iputils-ping \
+    libsdl1.2-dev xterm tar locales net-tools rsync sudo vim curl zstd \
+    liblz4-tool libssl-dev bc lzop libgnutls28-dev efitools git-lfs file \
+    iproute2 apt-utils
 
-# RUN apt-get install -y sudo kmod
+# Set up locales
+RUN locale-gen en_US.UTF-8 && \
+    update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
 
-ENV LANG en_US.utf8
+# Yocto needs 'source' command for setting up the build environment, so replace
+# the 'sh' alias to 'bash' instead of 'dash'.
+RUN rm /bin/sh && ln -s bash /bin/sh
 
 COPY run.sh /usr/bin/
 
