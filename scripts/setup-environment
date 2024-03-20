@@ -1,5 +1,7 @@
 #!/bin/bash
 
+declare -a TARGET_LIST=("qemux86-64" "qemuarm64" "raspberrypi3-64" "k3r5" "turbo-arm64")
+
 function usage {
     echo "sample first build:" 
     echo "   source setup-environment build.pi raspberrypi"
@@ -10,24 +12,41 @@ function usage {
 } 
 
 function printtargets {
-    echo target=$target is not supported
     echo "supported targets:"
-    echo "   qemux86-64"
-    echo "   qemuarm64"
-    echo "   raspberrypi4-64"
-    echo "   raspberrypi4-64"
+
+    for TARGET in "${TARGET_LIST[@]}"
+    do
+        echo "   ${TARGET}"
+    done
+
     echo ""
     return 0
 } 
 
+function CheckTarget
+{
+    TARGET_REQ=$1
+    for TARGET_ELEMENT in "${TARGET_LIST[@]}"
+    do
+        if [ "${TARGET_REQ}" = "${TARGET_ELEMENT}" ]; then
+            echo "target <${TARGET_REQ}>  found"
+            return 0
+        fi
+    done
+
+    echo "target <${TARGET_REQ}>  not found"
+    return 1
+}
+
 function addlayers {
     # add relevant layers
-    bitbake-layers add-layer $PWD/../sources/meta-openembedded/meta-oe/
-    bitbake-layers add-layer $PWD/../sources/meta-openembedded/meta-python/
-    bitbake-layers add-layer $PWD/../sources/meta-openembedded/meta-multimedia/
-    bitbake-layers add-layer $PWD/../sources/meta-openembedded/meta-networking/
-    bitbake-layers add-layer $PWD/../sources/meta-turbo/
-    bitbake-layers add-layer $PWD/../sources/meta-templates/
+    bitbake-layers add-layer "$PWD"/../sources/meta-openembedded/meta-oe/
+    bitbake-layers add-layer "$PWD"/../sources/meta-openembedded/meta-python/
+    bitbake-layers add-layer "$PWD"/../sources/meta-openembedded/meta-multimedia/
+    bitbake-layers add-layer "$PWD"/../sources/meta-openembedded/meta-networking/
+    bitbake-layers add-layer "$PWD"/../sources/meta-turbo/
+    bitbake-layers add-layer "$PWD"/../sources/meta-templates/
+    bitbake-layers add-layer "$PWD"/../sources/meta-arm/
     return 0
 } 
 
@@ -48,42 +67,55 @@ layers_dir=sources
 # check if argument is missing
 if [[ $# -eq 1 || $# -eq 2 ]]; then 
     build_dir=${script_dir}/$1
-    echo "Builddir =" $build_dir  
+    echo "Builddir =" "$build_dir"  
 else
     echo "error: number of arguments is not valid"
     echo ""
     usage
 fi
 
-# call the yocto oe-init-build-env script
-if [[ $# -eq 1 || $# -eq 2 ]]; then 
-    build_dir=${script_dir}/$1
-    echo "Builddir =" $build_dir
+# check if target exists and return when not exists
+if [[ $# -eq 2 ]]; then 
+    TARGET=$2
+    CheckTarget "${TARGET}"
 
-    if [ -f ${script_dir}/${layers_dir}/poky/oe-init-build-env ]; then
-        source ${script_dir}/${layers_dir}/poky/oe-init-build-env ${build_dir}
+    if [[ $? -eq 0 ]]; then
+        echo "Target ${TARGET} found!"
     else
-        echo "Sorry, can't find oe-init-build-env."
-        exit 1
+        printtargets "$TARGET"
+        return
     fi
 fi
 
-if [[ $# -eq 2 ]]; then 
-    target=$2
-    # copy template of local.conf 
-    if [ $target == "qemuarm64" ]; then
-        cp ../sources/meta-turbo/templates/qemuarm64/local.conf conf/local.conf
-        addlayers
-    elif [ $target == "qemux86-64" ]; then
-        cp ../sources/meta-turbo/templates/qemux86-64/local.conf conf/local.conf
-        addlayers
-    elif [ $target == "raspberrypi4-64" ]; then
-        cp ../sources/meta-turboqemux86-64/templates/raspberrypi/local.conf conf/local.conf
-        bitbake-layers add-layer $PWD/../sources/meta-raspberrypi/
-        addlayers
+# call the yocto oe-init-build-env script
+if [[ $# -eq 1 || $# -eq 2 ]]; then 
+    build_dir=${script_dir}/$1
+    echo "Builddir =" "$build_dir"
+
+    if [ -f "${script_dir}/${layers_dir}/poky/oe-init-build-env" ]; then
+        source ${script_dir}/${layers_dir}/poky/oe-init-build-env ${build_dir}
     else
-        printtargets
+        echo "Sorry, can't find oe-init-build-env."
+        return
     fi
+fi
+
+
+if [[ $# -eq 2 ]]; then 
+    TARGET=$2
+
+    # copy local conf and set machine
+    cp ../sources/meta-turbo/templates/local.conf conf/local.conf
+    sed -i "s/MACHINE ??= \"none\"/MACHINE ??= \"${TARGET}\"/g" conf/local.conf 
+
+    # add layers
+    addlayers
+
+    # copy template of local.conf 
+    if [ "${TARGET}" == "raspberrypi3-64" ]; then
+        bitbake-layers add-layer "${PWD}/../sources/meta-raspberrypi/"
+    fi
+
 fi
 
 echo "script is ready"
