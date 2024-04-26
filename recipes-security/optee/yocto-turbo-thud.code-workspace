@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "../../../.."
+		},
+		{
+			"path": "../../../../../analysis_ti_repos"
+		}
+	],
+	"settings": {
+		"task.saveBeforeRun": "always"
+	}
+}

@@ -1,0 +1,1 @@
+# COMPATIBLE_MACHINE = "qemuarm|qemuarm64|qemux86|qemuppc|qemumips|qemumips64|qemux86-64|turbo-arm64"
