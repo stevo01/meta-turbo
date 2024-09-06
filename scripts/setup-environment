@@ -1,6 +1,6 @@
 #!/bin/bash
 
-declare -a TARGET_LIST=("qemux86-64" "qemuarm64" "raspberrypi3-64" "k3r5" "turbo-arm64")
+declare -a TARGET_LIST=("qemux86-64" "qemuarm64" "raspberrypi3-64" "k3r5" "turbo-arm64" "turbo-efi-x86-64")
 
 function usage {
     echo "sample first build:" 
